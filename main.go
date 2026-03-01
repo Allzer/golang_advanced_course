@@ -2,42 +2,37 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"sync"
 )
 
 func main() {
-	code := make(chan int)
+	arr := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12} //78
+	numGorut := 3
 
-	var wg sync.WaitGroup
+	var totalSum int 
 
-	for i:=0; i<10; i++ {
-		wg.Add(1)
-		go func() {
-			go getResp(code, &wg)
-		}()
+	ch := make(chan int, numGorut)
+
+	partSize := len(arr) / numGorut
+
+	for i := 0; i < numGorut; i++ {
+
+		startIdx := i*partSize
+		endIdx := startIdx + partSize
+
+		go getSum(ch, arr[startIdx:endIdx])
 	}
 
-	go func()  {
-		wg.Wait()
-		close(code)	
-	}()
-
-	for res := range code{
-		fmt.Println("Статус-код:", res)
+	for i:=0; i < numGorut; i++{
+		totalSum += <-ch
 	}
+
+	fmt.Println("Сумма:", totalSum)
 }
 
-func getResp(codeCh chan int, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	url := "https://google.com"
-
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println("Ошибка запроса:", err)
-		return
+func getSum(sumCh chan int, arr []int) {
+	var res int
+	for _, data := range arr {
+		res += data
 	}
-
-	codeCh <- resp.StatusCode
+	sumCh <- res
 }
