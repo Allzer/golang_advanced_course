@@ -4,28 +4,33 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 )
 
 func main() {
-	t := time.Now()
+	code := make(chan int)
 
 	var wg sync.WaitGroup
 
-	for i := 0; i<10; i++{
+	for i:=0; i<10; i++ {
 		wg.Add(1)
-
-		go func () {
-			getResp()
-			wg.Done()
-		} ()
-
+		go func() {
+			go getResp(code, &wg)
+		}()
 	}
-	wg.Wait()
-	fmt.Println(time.Since(t))
+
+	go func()  {
+		wg.Wait()
+		close(code)	
+	}()
+
+	for res := range code{
+		fmt.Println("Статус-код:", res)
+	}
 }
 
-func getResp() {
+func getResp(codeCh chan int, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	url := "https://google.com"
 
 	resp, err := http.Get(url)
@@ -34,5 +39,5 @@ func getResp() {
 		return
 	}
 
-	fmt.Println("Статус-код:", resp.StatusCode)
+	codeCh <- resp.StatusCode
 }
