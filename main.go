@@ -1,43 +1,45 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
-	"sync"
+	"os"
+	"strings"
 )
 
 func main() {
-	code := make(chan int)
-
-	var wg sync.WaitGroup
-
-	for i:=0; i<10; i++ {
-		wg.Add(1)
-		go func() {
-			go getResp(code, &wg)
-		}()
+	path := flag.String("file", "url.txt", "path to URL file")
+	flag.Parse()
+	file, err := os.ReadFile(*path)
+	if err != nil{
+		panic(err.Error())
 	}
 
-	go func()  {
-		wg.Wait()
-		close(code)	
-	}()
+	urlSlice := strings.Split(string(file), ";")
 
-	for res := range code{
-		fmt.Println("Статус-код:", res)
+	recpChan := make(chan int)
+	errChan := make(chan error)
+
+	for _, url := range urlSlice{
+		go ping(url, recpChan, errChan)
+	}
+	for range urlSlice {
+		select{
+		case res := <-recpChan:
+			fmt.Println(res)
+		case errRes := <- errChan:
+			fmt.Println(errRes)
+		}
 	}
 }
 
-func getResp(codeCh chan int, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	url := "https://google.com"
-
+func ping(url string, recpChan chan int, errChan chan error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Ошибка запроса:", err)
+		errChan <- err
 		return
 	}
-
-	codeCh <- resp.StatusCode
+	// defer resp.Body.Close()
+	recpChan <- resp.StatusCode
 }
