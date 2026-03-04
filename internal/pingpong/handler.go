@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type PingPongHandler struct {}
+type PingPongHandler struct{}
 
 func NewPingPongHandler(router *http.ServeMux) {
 	handler := &PingPongHandler{}

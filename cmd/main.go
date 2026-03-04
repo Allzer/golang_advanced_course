@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"http-server/configs"
 	"http-server/internal/pingpong"
+	"net/http"
 )
 
 func main() {
+
+	config := configs.LoadConfig()
 
 	router := http.NewServeMux()
 	pingpong.NewPingPongHandler(router)
