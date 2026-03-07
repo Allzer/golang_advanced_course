@@ -3,16 +3,19 @@ package main
 import (
 	"fmt"
 	"http-server/configs"
-	"http-server/internal/pingpong"
+	"http-server/internal/auth"
 	"net/http"
 )
 
 func main() {
 
-	config := configs.LoadConfig()
+	conf := configs.LoadConfig()
 
 	router := http.NewServeMux()
-	pingpong.NewPingPongHandler(router)
+
+	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
+		Config: conf,
+	})
 
 	server := http.Server{
 		Addr:    ":5000",
