@@ -1,12 +1,11 @@
 package auth
 
 import (
-	"encoding/json"
 	"fmt"
 	"http-server/configs"
+	"http-server/pkg/req"
 	"http-server/pkg/res"
 	"net/http"
-	"net/mail"
 )
 
 type AuthHandlerDeps struct {
@@ -24,35 +23,19 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	router.HandleFunc("POST /auth/login", handler.Login())
 	router.HandleFunc("POST /auth/register", handler.Register())
 
-	router.HandleFunc("GET /auth/login", handler.Login())
-	router.HandleFunc("GET /auth/register", handler.Register())
+	// router.HandleFunc("GET /auth/login", handler.Login())
+	// router.HandleFunc("GET /auth/register", handler.Register())
 }
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[LoginRequest](&w, r)
 
-		var payload LoginRequest
-		err := json.NewDecoder(req.Body).Decode(&payload)
 		if err != nil {
-			res.Json(w, err.Error(), 402)
 			return
 		}
 
-		if payload.Email == "" {
-			res.Json(w, "Email is none", 402)
-			return
-		}
-
-		_, err = mail.ParseAddress(payload.Email)
-		if err != nil {
-			res.Json(w, "Wrong email", 402)
-			return
-		}
-
-		if payload.Password == "" {
-			res.Json(w, "Password is none", 402)
-			return
-		}
+		fmt.Println(body)
 
 		data := LoginResopnse{
 			Token: "123",
@@ -62,7 +45,20 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 }
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Register")
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[RegisterRequest](&w, r)
+
+		if err != nil {
+			return
+		}
+
+		fmt.Println(body)
+
+		data := RegisterResponse{
+			Email: body.Email,
+			Name: body.Name,
+		}
+		res.Json(w, data, 200)
+
 	}
 }
