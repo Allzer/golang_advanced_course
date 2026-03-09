@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"http-server/configs"
 	"http-server/internal/auth"
+	"http-server/pkg/db"
 	"net/http"
 )
 
 func main() {
 
 	conf := configs.LoadConfig()
+	
+	_ = db.NewDb(conf)
 
 	router := http.NewServeMux()
 
