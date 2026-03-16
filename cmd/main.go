@@ -6,6 +6,7 @@ import (
 	"http-server/internal/auth"
 	"http-server/internal/link"
 	"http-server/pkg/db"
+	"http-server/pkg/middleware"
 	"net/http"
 )
 
@@ -29,10 +30,16 @@ func main() {
 		LinkRepository: linkRepository,
 	})
 
+	//Middlewares
+	stack := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+
 	//connection
 	server := http.Server{
 		Addr:    ":5000",
-		Handler: router,
+		Handler: stack(router),
 	}
 
 	fmt.Println("Сервер хапущен на 5000 порте")

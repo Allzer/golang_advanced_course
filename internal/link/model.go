@@ -21,7 +21,7 @@ func NewLink(url string) *Link {
 }
 
 func (link *Link) GenHash() {
-	link.Hash = RandHashGen(10)
+	link.Hash = RandHashGen(20)
 }
 
 var latterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") 

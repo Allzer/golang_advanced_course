@@ -2,6 +2,7 @@ package link
 
 import (
 	"fmt"
+	"http-server/pkg/middleware"
 	"http-server/pkg/req"
 	"http-server/pkg/res"
 	"net/http"
@@ -22,7 +23,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
 	}
-	router.HandleFunc("POST /link", handler.Create())
+	router.Handle("POST /link", middleware.IsAuthed(handler.Create()))
 	router.HandleFunc("GET /{hash}", handler.GoTo())
 	router.HandleFunc("PATCH /link/{id}", handler.Update())
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
@@ -37,13 +38,13 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 		link := NewLink(body.Url)
 
-		for {
-			existedLink, _ := handler.LinkRepository.GetByHash(link.Hash)
-			if existedLink == nil {
-				break
-			}
-			link.GenHash()
-		}
+		// for {
+		// 	existedLink, _ := handler.LinkRepository.GetByHash(link.Hash)
+		// 	if existedLink == nil {
+		// 		break
+		// 	}
+		// 	link.GenHash()
+		// }
 
 		createdLink, err := handler.LinkRepository.Create(link)
 		if err != nil {
@@ -79,8 +80,8 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 		}
 		link, err := handler.LinkRepository.UpdateLinkParams(&Link{
 			Model: gorm.Model{ID: uint(id)},
-			Url: body.Url,
-			Hash: body.Hash,
+			Url:   body.Url,
+			Hash:  body.Hash,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
