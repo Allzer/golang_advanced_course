@@ -12,10 +12,10 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
-	Name string `json:"name" validate:"required,username_valid"`
+	Name     string `json:"name" validate:"required"`
 }
 
 type RegisterResponse struct {
-	Email    string `json:"email"`
-	Name string `json:"name"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
