@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"fmt"
 	"http-server/configs"
+	"http-server/pkg/jwt"
 	"http-server/pkg/req"
 	"http-server/pkg/res"
 	"net/http"
@@ -25,31 +25,24 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	}
 	router.HandleFunc("POST /auth/login", handler.Login())
 	router.HandleFunc("POST /auth/register", handler.Register())
-
-	// router.HandleFunc("GET /auth/login", handler.Login())
-	// router.HandleFunc("GET /auth/register", handler.Register())
 }
-
-// {
-// 	"email": "123@mail.ru",
-// 	"password": "123",
-// 	"name": "XD",
-// }
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[LoginRequest](&w, r)
 		
 		userEmail, err := handler.AuthService.Login(body.Email, body.Password)
-		fmt.Println(userEmail, err)
 		if err != nil {
-			return
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+		}
+		
+		token, _ := jwt.NewJwt(handler.Config.Auth.Secret).Create(userEmail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		fmt.Println(body)
-
 		data := LoginResopnse{
-			Token: "123",
+			Token: token,
 		}
 		res.Json(w, data, 200)
 	}
