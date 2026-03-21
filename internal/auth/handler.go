@@ -39,7 +39,9 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[LoginRequest](&w, r)
-
+		
+		userEmail, err := handler.AuthService.Login(body.Email, body.Password)
+		fmt.Println(userEmail, err)
 		if err != nil {
 			return
 		}
