@@ -16,10 +16,6 @@ func NewAuthService(userRepository *users.UserRepository) *AuthService {
 }
 
 func (service *AuthService) Register(email string, password, name string) (string, error) {
-	existedUser, _ := service.UserRepository.FindByEmail(email)
-	if existedUser != nil {
-		return "", errors.New(ErrUserExists)
-	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
